@@ -1,0 +1,23 @@
+name: pulsecare-jenkins
+
+services:
+  jenkins:
+    build:
+      context: ..
+      dockerfile: deploy/jenkins/Dockerfile
+    user: root
+    environment:
+      JENKINS_OPTS: "--prefix=/"
+      PULSECARE_WORKSPACE: /run/desktop/mnt/host/d/PulseCare
+    ports:
+      - "8090:8080"
+      - "50000:50000"
+    volumes:
+      - jenkins-home:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ..:/workspace
+      - ..:/run/desktop/mnt/host/d/PulseCare
+    restart: unless-stopped
+
+volumes:
+  jenkins-home:

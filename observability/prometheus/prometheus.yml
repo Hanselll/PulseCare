@@ -1,0 +1,23 @@
+global:
+  scrape_interval: 5s
+
+scrape_configs:
+  - job_name: ingestion-service
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["ingestion-service:8000"]
+
+  - job_name: risk-scoring-service
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["risk-scoring-service:8000"]
+
+  - job_name: alert-service
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["alert-service:8000"]
+
+  - job_name: device-simulator
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["device-simulator:8000"]

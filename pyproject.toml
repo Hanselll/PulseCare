@@ -1,0 +1,19 @@
+[project]
+name = "pulsecare"
+version = "0.1.0"
+description = "PulseCare cloud-native diagnostic target system MVP"
+requires-python = ">=3.11"
+dependencies = [
+    "pulsecare-core",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["libs/pulsecare-core"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]

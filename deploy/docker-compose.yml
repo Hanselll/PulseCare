@@ -1,0 +1,141 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: pulsecare
+      POSTGRES_USER: pulsecare
+      POSTGRES_PASSWORD: pulsecare
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pulsecare -d pulsecare"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  alert-service:
+    build:
+      context: ..
+      dockerfile: services/alert-service/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://pulsecare:pulsecare@postgres:5432/pulsecare
+      REDIS_URL: redis://redis:6379/0
+      REDIS_LATENCY_MS: "0"
+    ports:
+      - "8002:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  risk-scoring-service:
+    build:
+      context: ..
+      dockerfile: services/risk-scoring-service/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://pulsecare:pulsecare@postgres:5432/pulsecare
+      REDIS_URL: redis://redis:6379/0
+      ALERT_URL: http://alert-service:8000/api/v1/alerts/evaluate
+      MEMORY_LEAK_MODE: "false"
+      SCORING_DELAY_MS: "0"
+      REDIS_LATENCY_MS: "0"
+    ports:
+      - "8001:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      alert-service:
+        condition: service_started
+
+  ingestion-service:
+    build:
+      context: ..
+      dockerfile: services/ingestion-service/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://pulsecare:pulsecare@postgres:5432/pulsecare
+      SCORING_URL: http://risk-scoring-service:8000/api/v1/score
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      risk-scoring-service:
+        condition: service_started
+
+  device-simulator:
+    build:
+      context: ..
+      dockerfile: services/device-simulator/Dockerfile
+    environment:
+      DEVICE_COUNT: "25"
+      SEND_INTERVAL_MS: "1000"
+      ERROR_MODE: normal
+      TARGET_INGESTION_URL: http://ingestion-service:8000/api/v1/signals
+      REGION_COUNT: "3"
+      SCENARIO_NAME: baseline
+    ports:
+      - "8003:8000"
+    depends_on:
+      ingestion-service:
+        condition: service_started
+
+  prometheus:
+    image: prom/prometheus:v2.54.1
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.retention.time=2d"
+    volumes:
+      - ../observability/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    ports:
+      - "9090:9090"
+    depends_on:
+      - ingestion-service
+      - risk-scoring-service
+      - alert-service
+      - device-simulator
+
+  grafana:
+    image: grafana/grafana:11.2.0
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    volumes:
+      - ../observability/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ../observability/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
+
+  frontend:
+    image: nginx:1.27-alpine
+    volumes:
+      - ../frontend:/usr/share/nginx/html:ro
+      - ../frontend/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    ports:
+      - "8080:80"
+    depends_on:
+      - ingestion-service
+      - risk-scoring-service
+      - alert-service
+      - device-simulator
+      - prometheus
+      - grafana
+
+volumes:
+  postgres-data:

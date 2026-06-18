@@ -1,0 +1,14 @@
+[project]
+name = "pulsecare-core"
+version = "0.1.0"
+description = "Shared domain logic for PulseCare"
+requires-python = ">=3.11"
+dependencies = [
+    "pydantic>=2.7,<3.0",
+    "python-json-logger>=2.0,<3.0",
+    "prometheus-client>=0.20,<1.0",
+]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"

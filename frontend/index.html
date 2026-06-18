@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PulseCare Console</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="shell">
+      <aside class="sidebar" aria-label="Primary">
+        <div class="brand">
+          <span class="brand-mark"></span>
+          <div>
+            <strong>PulseCare</strong>
+            <span>Cloud Native Health</span>
+          </div>
+        </div>
+        <nav>
+          <a class="active" href="#overview">总览</a>
+          <a href="#devices">设备墙</a>
+          <a href="#alerts">告警中心</a>
+          <a href="#faults">故障模式</a>
+        </nav>
+        <div class="side-status">
+          <span class="dot" id="global-dot"></span>
+          <div>
+            <strong id="global-status">同步中</strong>
+            <span id="last-refresh">等待刷新</span>
+          </div>
+        </div>
+      </aside>
+
+      <main>
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">远程设备健康监测与告警系统</p>
+            <h1>运行控制台</h1>
+          </div>
+          <div class="top-actions">
+            <a class="link-button" href="http://localhost:3000" target="_blank" rel="noreferrer">Grafana</a>
+            <a class="link-button" href="http://localhost:9090" target="_blank" rel="noreferrer">Prometheus</a>
+            <button id="refresh-button" type="button">刷新</button>
+          </div>
+        </header>
+
+        <section id="overview" class="metrics-grid" aria-label="Overview metrics">
+          <article class="metric">
+            <span>在线服务</span>
+            <strong id="healthy-services">--/4</strong>
+            <small>Compose service health</small>
+          </article>
+          <article class="metric">
+            <span>设备规模</span>
+            <strong id="device-count">25</strong>
+            <small>device-simulator baseline</small>
+          </article>
+          <article class="metric">
+            <span>事件吞吐</span>
+            <strong id="event-rate">--/s</strong>
+            <small>simulator events</small>
+          </article>
+          <article class="metric danger">
+            <span>打开告警</span>
+            <strong id="open-alerts">--</strong>
+            <small>latest alert records</small>
+          </article>
+        </section>
+
+        <section class="workspace">
+          <div class="panel service-panel">
+            <div class="panel-head">
+              <div>
+                <p class="eyebrow">Service Chain</p>
+                <h2>微服务健康</h2>
+              </div>
+            </div>
+            <div class="service-chain" id="service-chain"></div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-head">
+              <div>
+                <p class="eyebrow">Risk Mix</p>
+                <h2>风险分布</h2>
+              </div>
+            </div>
+            <div class="risk-bars" id="risk-bars"></div>
+          </div>
+        </section>
+
+        <section id="devices" class="panel">
+          <div class="panel-head">
+            <div>
+              <p class="eyebrow">Device Wall</p>
+              <h2>设备健康墙</h2>
+            </div>
+            <div class="legend">
+              <span><i class="ok"></i>LOW</span>
+              <span><i class="warn"></i>MEDIUM/HIGH</span>
+              <span><i class="crit"></i>CRITICAL</span>
+            </div>
+          </div>
+          <div class="device-grid" id="device-grid"></div>
+        </section>
+
+        <section class="workspace">
+          <div id="alerts" class="panel">
+            <div class="panel-head">
+              <div>
+                <p class="eyebrow">Alerts</p>
+                <h2>告警中心</h2>
+              </div>
+              <span class="pill" id="alert-count">0 条</span>
+            </div>
+            <div class="alert-list" id="alert-list"></div>
+          </div>
+
+          <div id="faults" class="panel fault-panel">
+            <div class="panel-head">
+              <div>
+                <p class="eyebrow">Fault Modes</p>
+                <h2>故障模式</h2>
+              </div>
+            </div>
+            <div class="fault-list">
+              <div><strong>overheat</strong><span>高温设备批量出现</span></div>
+              <div><strong>low_voltage</strong><span>低电压导致健康分下降</span></div>
+              <div><strong>heartbeat_loss</strong><span>心跳丢失触发风险评分</span></div>
+              <div><strong>traffic_spike</strong><span>吞吐突增压测链路</span></div>
+              <div><strong>invalid_schema</strong><span>校验失败指标上升</span></div>
+            </div>
+            <p class="hint">修改 <code>deploy/docker-compose.yml</code> 中 device-simulator 的 <code>ERROR_MODE</code> 后重启服务即可切换场景。</p>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script src="/app.js" type="module"></script>
+  </body>
+</html>
