@@ -1,0 +1,44 @@
+version: 0.2
+
+env:
+  variables:
+    AWS_ACCOUNT_ID: "967002976835"
+    AWS_DEFAULT_REGION: "us-east-1"
+    ECR_REPOSITORY: "pulsecare-ingestion-service"
+    IMAGE_TAG: "latest"
+
+phases:
+  install:
+    runtime-versions:
+      python: 3.11
+    commands:
+      - python -m pip install --upgrade pip
+      - python -m pip install -e libs/pulsecare-core pytest ruff
+      - python -m pip install -r services/ingestion-service/requirements.txt
+      - python -m pip install -r services/risk-scoring-service/requirements.txt
+      - python -m pip install -r services/alert-service/requirements.txt
+      - python -m pip install -r services/device-simulator/requirements.txt
+
+  pre_build:
+    commands:
+      - ruff check .
+      - pytest
+      - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
+      - REPOSITORY_URI=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$ECR_REPOSITORY
+      - COMMIT_TAG=${CODEBUILD_RESOLVED_SOURCE_VERSION:0:7}
+
+  build:
+    commands:
+      - docker build -f services/ingestion-service/Dockerfile -t $ECR_REPOSITORY:$IMAGE_TAG .
+      - docker tag $ECR_REPOSITORY:$IMAGE_TAG $REPOSITORY_URI:$IMAGE_TAG
+      - docker tag $ECR_REPOSITORY:$IMAGE_TAG $REPOSITORY_URI:$COMMIT_TAG
+
+  post_build:
+    commands:
+      - docker push $REPOSITORY_URI:$IMAGE_TAG
+      - docker push $REPOSITORY_URI:$COMMIT_TAG
+      - printf '[{"name":"ingestion-service","imageUri":"%s"}]' "$REPOSITORY_URI:$COMMIT_TAG" > imagedefinitions.json
+
+artifacts:
+  files:
+    - imagedefinitions.json
