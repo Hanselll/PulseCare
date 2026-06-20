@@ -10,11 +10,10 @@ from uuid import uuid4
 import asyncpg
 from fastapi import FastAPI, HTTPException, Request, Response
 from prometheus_client import CONTENT_TYPE_LATEST, Counter, Histogram, generate_latest
-from redis.asyncio import Redis
-
 from pulsecare_core.alerting import evaluate_alerts, primary_alert_reason
 from pulsecare_core.logging import configure_json_logging
 from pulsecare_core.schemas import RiskLevel, RiskScore
+from redis.asyncio import Redis
 
 SERVICE_NAME = "alert-service"
 DATABASE_URL = os.getenv(
@@ -170,7 +169,9 @@ async def evaluate(score: RiskScore, request: Request) -> dict:
             if alert.device_id is None:
                 try:
                     assert redis_client is not None
-                    await redis_client.setex(f"region:{score.region}:alert_open", 600, alert.alert_id)
+                    await redis_client.setex(
+                        f"region:{score.region}:alert_open", 600, alert.alert_id
+                    )
                 except Exception:
                     REDIS_ERRORS.inc()
 

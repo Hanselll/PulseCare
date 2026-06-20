@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from enum import StrEnum
 from uuid import uuid4
 
@@ -37,8 +37,8 @@ class DeviceSignal(BaseModel):
     @classmethod
     def normalize_timestamp(cls, value: datetime) -> datetime:
         if value.tzinfo is None:
-            return value.replace(tzinfo=timezone.utc)
-        return value.astimezone(timezone.utc)
+            return value.replace(tzinfo=UTC)
+        return value.astimezone(UTC)
 
 
 class RiskScore(BaseModel):
@@ -47,7 +47,7 @@ class RiskScore(BaseModel):
     health_score: int = Field(ge=0, le=100)
     risk_level: RiskLevel
     risk_reasons: list[str] = Field(default_factory=list)
-    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
 
 class Alert(BaseModel):
@@ -57,7 +57,7 @@ class Alert(BaseModel):
     severity: str
     reason: str
     status: AlertStatus = AlertStatus.OPEN
-    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
 
 class AlertDecision(BaseModel):

@@ -6,13 +6,12 @@ import os
 import random
 import time
 from contextlib import asynccontextmanager
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from uuid import uuid4
 
 import httpx
 from fastapi import FastAPI, Response
 from prometheus_client import CONTENT_TYPE_LATEST, Counter, Histogram, generate_latest
-
 from pulsecare_core.logging import configure_json_logging
 
 SERVICE_NAME = "device-simulator"
@@ -112,7 +111,7 @@ def generate_signal() -> dict:
     region_number = random.randint(1, REGION_COUNT)
     payload = {
         "device_id": f"dev-{device_number:03d}",
-        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
         "temperature": round(random.uniform(45, 78), 2),
         "voltage": round(random.uniform(3.1, 4.2), 2),
         "heartbeat": True,

@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 from pulsecare_core.validation import validate_signal
 
@@ -19,7 +19,7 @@ def valid_payload() -> dict:
 def test_validate_signal_accepts_valid_payload():
     ok, signal, errors = validate_signal(
         valid_payload(),
-        now=datetime(2026, 5, 18, 8, 0, tzinfo=timezone.utc),
+        now=datetime(2026, 5, 18, 8, 0, tzinfo=UTC),
     )
 
     assert ok is True
@@ -51,7 +51,7 @@ def test_validate_signal_rejects_out_of_range_temperature():
 
 
 def test_validate_signal_rejects_future_timestamp():
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     payload = valid_payload()
     payload["timestamp"] = (now + timedelta(minutes=10)).isoformat()
 

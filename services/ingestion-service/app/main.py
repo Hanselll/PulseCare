@@ -10,7 +10,6 @@ import asyncpg
 import httpx
 from fastapi import FastAPI, HTTPException, Request, Response
 from prometheus_client import CONTENT_TYPE_LATEST, Counter, Histogram, generate_latest
-
 from pulsecare_core.logging import configure_json_logging
 from pulsecare_core.validation import validate_signal
 

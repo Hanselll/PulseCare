@@ -1,12 +1,11 @@
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 from pydantic import ValidationError
 
 from pulsecare_core.schemas import DeviceSignal
-
 
 DEFAULT_REQUIRED_FIELDS = [
     "device_id",
@@ -41,7 +40,7 @@ def validate_signal(
             errors.append({"field": field, "message": item["msg"]})
         return False, None, errors
 
-    current_time = now or datetime.now(timezone.utc)
+    current_time = now or datetime.now(UTC)
     if signal.timestamp > current_time + timedelta(minutes=5):
         return False, None, [{"field": "timestamp", "message": "timestamp too far in future"}]
 

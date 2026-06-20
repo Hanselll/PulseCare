@@ -11,11 +11,10 @@ import asyncpg
 import httpx
 from fastapi import FastAPI, HTTPException, Request, Response
 from prometheus_client import CONTENT_TYPE_LATEST, Counter, Histogram, generate_latest
-from redis.asyncio import Redis
-
 from pulsecare_core.logging import configure_json_logging
 from pulsecare_core.schemas import DeviceSignal, RiskLevel
 from pulsecare_core.scoring import create_default_scorer
+from redis.asyncio import Redis
 
 SERVICE_NAME = "risk-scoring-service"
 DATABASE_URL = os.getenv(
@@ -159,7 +158,9 @@ async def score_signal(signal: DeviceSignal, request: Request) -> dict:
 
     try:
         assert redis_client is not None
-        await redis_client.setex(f"device:{signal.device_id}:risk_level", 600, score.risk_level.value)
+        await redis_client.setex(
+            f"device:{signal.device_id}:risk_level", 600, score.risk_level.value
+        )
         await redis_client.setex(f"device:{signal.device_id}:latest", 600, signal.model_dump_json())
     except Exception as exc:
         REDIS_ERRORS.inc()
