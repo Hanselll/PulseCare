@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: pulsecare-db-secret
+type: Opaque
+stringData:
+  POSTGRES_DB: pulsecare
+  POSTGRES_USER: pulsecare
+  POSTGRES_PASSWORD: pulsecare
+  DATABASE_URL: postgresql://pulsecare:pulsecare@postgres:5432/pulsecare
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pulsecare-app-config
+data:
+  REDIS_URL: redis://redis:6379/0
+  SCORING_URL: http://risk-scoring-service:8000/api/v1/score
+  ALERT_URL: http://alert-service:8000/api/v1/alerts/evaluate
+  TARGET_INGESTION_URL: http://ingestion-service:8000/api/v1/signals
+  DEVICE_COUNT: "25"
+  SEND_INTERVAL_MS: "1000"
+  ERROR_MODE: normal
+  REGION_COUNT: "3"
+  SCENARIO_NAME: baseline
+  MEMORY_LEAK_MODE: "false"
+  SCORING_DELAY_MS: "0"
+  REDIS_LATENCY_MS: "0"

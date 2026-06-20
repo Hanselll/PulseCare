@@ -1,0 +1,74 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: device-simulator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: device-simulator
+  template:
+    metadata:
+      labels:
+        app: device-simulator
+    spec:
+      containers:
+        - name: device-simulator
+          image: 967002976835.dkr.ecr.us-east-1.amazonaws.com/pulsecare-device-simulator:latest
+          ports:
+            - containerPort: 8000
+          env:
+            - name: DEVICE_COUNT
+              valueFrom:
+                configMapKeyRef:
+                  name: pulsecare-app-config
+                  key: DEVICE_COUNT
+            - name: SEND_INTERVAL_MS
+              valueFrom:
+                configMapKeyRef:
+                  name: pulsecare-app-config
+                  key: SEND_INTERVAL_MS
+            - name: ERROR_MODE
+              valueFrom:
+                configMapKeyRef:
+                  name: pulsecare-app-config
+                  key: ERROR_MODE
+            - name: TARGET_INGESTION_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: pulsecare-app-config
+                  key: TARGET_INGESTION_URL
+            - name: REGION_COUNT
+              valueFrom:
+                configMapKeyRef:
+                  name: pulsecare-app-config
+                  key: REGION_COUNT
+            - name: SCENARIO_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: pulsecare-app-config
+                  key: SCENARIO_NAME
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8000
+            initialDelaySeconds: 30
+            periodSeconds: 20
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: device-simulator
+spec:
+  selector:
+    app: device-simulator
+  ports:
+    - name: http
+      port: 8000
+      targetPort: 8000
