@@ -23,14 +23,28 @@ phases:
 
   build:
     commands:
-      - set -e
-      - kubectl apply -f deploy/k8s/default/
-      - kubectl rollout status deployment/postgres --timeout=180s
-      - kubectl rollout status deployment/redis --timeout=180s
-      - kubectl rollout status deployment/alert-service --timeout=180s
-      - kubectl rollout status deployment/risk-scoring-service --timeout=180s
-      - kubectl rollout status deployment/ingestion-service --timeout=180s
-      - kubectl rollout status deployment/device-simulator --timeout=180s
+      - |
+        set -e
+        kubectl apply -f deploy/k8s/default/config.yaml
+        kubectl apply -f deploy/k8s/default/postgres.yaml
+        kubectl apply -f deploy/k8s/default/redis.yaml
+        kubectl rollout status deployment/postgres --timeout=240s
+        kubectl rollout status deployment/redis --timeout=180s
+
+        kubectl apply -f deploy/k8s/default/alert-service.yaml
+        kubectl apply -f deploy/k8s/default/risk-scoring-service.yaml
+        kubectl apply -f deploy/k8s/default/ingestion-service.yaml
+        kubectl apply -f deploy/k8s/default/device-simulator.yaml
+
+        kubectl rollout restart deployment/alert-service
+        kubectl rollout restart deployment/risk-scoring-service
+        kubectl rollout restart deployment/ingestion-service
+        kubectl rollout restart deployment/device-simulator
+
+        kubectl rollout status deployment/alert-service --timeout=240s
+        kubectl rollout status deployment/risk-scoring-service --timeout=240s
+        kubectl rollout status deployment/ingestion-service --timeout=240s
+        kubectl rollout status deployment/device-simulator --timeout=240s
 
   post_build:
     commands:
