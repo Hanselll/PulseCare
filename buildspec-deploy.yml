@@ -57,7 +57,7 @@ phases:
         kubectl rollout status deployment/risk-scoring-service --timeout=240s
         kubectl rollout status deployment/ingestion-service --timeout=240s
         kubectl rollout status deployment/device-simulator --timeout=240s
-        kubectl apply -f deploy/k8s/default/service-monitors.yaml
+        kubectl apply -f deploy/k8s/monitoring/service-monitors.yaml
 
   post_build:
     commands:
