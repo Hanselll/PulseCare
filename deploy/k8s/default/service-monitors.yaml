@@ -1,0 +1,20 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: pulsecare-services
+  labels:
+    release: pulsecare-monitoring
+spec:
+  selector:
+    matchExpressions:
+      - key: app
+        operator: In
+        values:
+          - ingestion-service
+          - risk-scoring-service
+          - alert-service
+          - device-simulator
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: 15s

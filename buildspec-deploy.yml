@@ -4,6 +4,7 @@ env:
   variables:
     AWS_DEFAULT_REGION: "us-east-1"
     EKS_CLUSTER_NAME: "pulsecare-dev"
+    MONITORING_RELEASE: "pulsecare-monitoring"
 
 phases:
   install:
@@ -14,17 +15,28 @@ phases:
       - chmod +x kubectl
       - mv kubectl /usr/local/bin/kubectl
       - kubectl version --client
+      - echo "Installing helm"
+      - curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+      - helm version
 
   pre_build:
     commands:
       - set -e
       - aws eks update-kubeconfig --region $AWS_DEFAULT_REGION --name $EKS_CLUSTER_NAME
       - kubectl get nodes
+      - helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+      - helm repo update
 
   build:
     commands:
       - |
         set -e
+        helm upgrade --install "$MONITORING_RELEASE" prometheus-community/kube-prometheus-stack \
+          --namespace default \
+          --values deploy/helm/monitoring-values.yaml \
+          --wait \
+          --timeout 10m
+
         kubectl apply -f deploy/k8s/default/config.yaml
         kubectl apply -f deploy/k8s/default/postgres.yaml
         kubectl apply -f deploy/k8s/default/redis.yaml
@@ -45,8 +57,10 @@ phases:
         kubectl rollout status deployment/risk-scoring-service --timeout=240s
         kubectl rollout status deployment/ingestion-service --timeout=240s
         kubectl rollout status deployment/device-simulator --timeout=240s
+        kubectl apply -f deploy/k8s/default/service-monitors.yaml
 
   post_build:
     commands:
       - kubectl get pods
       - kubectl get svc
+      - kubectl get servicemonitor

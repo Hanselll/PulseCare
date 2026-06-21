@@ -1,0 +1,27 @@
+grafana:
+  adminPassword: admin
+  service:
+    type: ClusterIP
+  defaultDashboardsEnabled: true
+
+prometheus:
+  service:
+    type: ClusterIP
+  prometheusSpec:
+    serviceMonitorSelectorNilUsesHelmValues: false
+    podMonitorSelectorNilUsesHelmValues: false
+    ruleSelectorNilUsesHelmValues: false
+
+alertmanager:
+  enabled: true
+  service:
+    type: ClusterIP
+
+kubeControllerManager:
+  enabled: false
+
+kubeScheduler:
+  enabled: false
+
+kubeProxy:
+  enabled: false
