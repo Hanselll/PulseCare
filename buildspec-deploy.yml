@@ -1,0 +1,38 @@
+version: 0.2
+
+env:
+  variables:
+    AWS_DEFAULT_REGION: "us-east-1"
+    EKS_CLUSTER_NAME: "pulsecare-dev"
+
+phases:
+  install:
+    commands:
+      - set -e
+      - echo "Installing kubectl"
+      - curl -sSLo kubectl https://s3.us-west-2.amazonaws.com/amazon-eks/1.30.0/2024-05-12/bin/linux/amd64/kubectl
+      - chmod +x kubectl
+      - mv kubectl /usr/local/bin/kubectl
+      - kubectl version --client
+
+  pre_build:
+    commands:
+      - set -e
+      - aws eks update-kubeconfig --region $AWS_DEFAULT_REGION --name $EKS_CLUSTER_NAME
+      - kubectl get nodes
+
+  build:
+    commands:
+      - set -e
+      - kubectl apply -f deploy/k8s/default/
+      - kubectl rollout status deployment/postgres --timeout=180s
+      - kubectl rollout status deployment/redis --timeout=180s
+      - kubectl rollout status deployment/alert-service --timeout=180s
+      - kubectl rollout status deployment/risk-scoring-service --timeout=180s
+      - kubectl rollout status deployment/ingestion-service --timeout=180s
+      - kubectl rollout status deployment/device-simulator --timeout=180s
+
+  post_build:
+    commands:
+      - kubectl get pods
+      - kubectl get svc

@@ -15,6 +15,7 @@ spec:
       containers:
         - name: risk-scoring-service
           image: 967002976835.dkr.ecr.us-east-1.amazonaws.com/pulsecare-risk-scoring-service:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 8000
           env:

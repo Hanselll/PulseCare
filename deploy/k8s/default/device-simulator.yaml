@@ -15,6 +15,7 @@ spec:
       containers:
         - name: device-simulator
           image: 967002976835.dkr.ecr.us-east-1.amazonaws.com/pulsecare-device-simulator:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 8000
           env:

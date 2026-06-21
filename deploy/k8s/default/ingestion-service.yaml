@@ -15,6 +15,7 @@ spec:
       containers:
         - name: ingestion-service
           image: 967002976835.dkr.ecr.us-east-1.amazonaws.com/pulsecare-ingestion-service:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 8000
           env:
