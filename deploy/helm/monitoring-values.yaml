@@ -9,7 +9,9 @@ prometheus:
     type: ClusterIP
   prometheusSpec:
     serviceMonitorSelectorNilUsesHelmValues: false
+    serviceMonitorNamespaceSelector: {}
     podMonitorSelectorNilUsesHelmValues: false
+    podMonitorNamespaceSelector: {}
     ruleSelectorNilUsesHelmValues: false
 
 alertmanager:
