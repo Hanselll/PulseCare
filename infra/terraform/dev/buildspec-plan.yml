@@ -1,0 +1,26 @@
+version: 0.2
+
+phases:
+  install:
+    commands:
+      - set -e
+      - yum install -y yum-utils
+      - yum-config-manager --add-repo https://rpm.releases.hashicorp.com/AmazonLinux/hashicorp.repo
+      - yum -y install terraform
+      - terraform version
+
+  build:
+    commands:
+      - set -e
+      - cd infra/terraform/dev
+      - terraform init
+      - terraform fmt -check
+      - terraform validate
+      - terraform plan -out=tfplan
+
+artifacts:
+  base-directory: infra/terraform/dev
+  files:
+    - "**/*"
+    - ".terraform.lock.hcl"
+  discard-paths: no

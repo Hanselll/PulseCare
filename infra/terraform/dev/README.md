@@ -88,3 +88,22 @@ terraform plan
 - This first IaC step deliberately does not manage EKS, IAM, or CodePipeline yet.
 - ECR repositories are configured with mutable tags because the current learning pipeline still pushes `latest`.
 - Lifecycle policies expire untagged images and keep the most recent images to control storage cost.
+
+## Infra Pipeline
+
+The Terraform CI/CD pipeline should use:
+
+- `infra/terraform/dev/buildspec-plan.yml`
+- `infra/terraform/dev/buildspec-apply.yml`
+
+Recommended pipeline flow:
+
+```text
+Source
+  -> TerraformPlan
+  -> ManualApproval
+  -> TerraformApply
+```
+
+The plan stage emits the Terraform working directory as an artifact, including `tfplan`.
+The apply stage uses that plan artifact as its source and runs `terraform apply tfplan`.
