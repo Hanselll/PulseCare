@@ -1,3 +1,6 @@
 aws_region                 = "us-east-1"
 max_images                 = 10
 untagged_image_expire_days = 7
+github_connection_arn      = "arn:aws:codeconnections:us-east-1:967002976835:connection/19faabee-8f20-4446-8c54-ce733c823e61"
+github_repository          = "Hanselll/PulseCare"
+github_branch              = "main"

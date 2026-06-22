@@ -107,3 +107,39 @@ Source
 
 The plan stage emits the Terraform working directory as an artifact, including `tfplan`.
 The apply stage uses that plan artifact as its source and runs `terraform apply tfplan`.
+
+This Terraform configuration now manages:
+
+- Infra pipeline artifact bucket
+- Terraform CodeBuild service role and inline policy
+- Terraform plan/apply CodeBuild projects
+- Infra CodePipeline service role and inline policy
+- `pulsecare-infra-pipeline`
+
+If any of these resources were already created manually, import them before `terraform apply`.
+Typical import commands:
+
+```bash
+terraform import aws_s3_bucket.infra_pipeline_artifacts pulsecare-infra-pipeline-artifacts-967002976835-us-east-1
+terraform import aws_s3_bucket_public_access_block.infra_pipeline_artifacts pulsecare-infra-pipeline-artifacts-967002976835-us-east-1
+terraform import aws_s3_bucket_server_side_encryption_configuration.infra_pipeline_artifacts pulsecare-infra-pipeline-artifacts-967002976835-us-east-1
+terraform import aws_s3_bucket_versioning.infra_pipeline_artifacts pulsecare-infra-pipeline-artifacts-967002976835-us-east-1
+
+terraform import aws_iam_role.terraform_codebuild codebuild-pulsecare-terraform-service-role
+terraform import aws_iam_role_policy.terraform_codebuild codebuild-pulsecare-terraform-service-role:PulseCareTerraformCodeBuildAccess
+
+terraform import aws_codebuild_project.terraform_plan pulsecare-terraform-plan
+terraform import aws_codebuild_project.terraform_apply pulsecare-terraform-apply
+
+terraform import aws_iam_role.infra_codepipeline codepipeline-pulsecare-infra-service-role
+terraform import aws_iam_role_policy.infra_codepipeline codepipeline-pulsecare-infra-service-role:PulseCareInfraCodePipelineAccess
+
+terraform import aws_codepipeline.infra pulsecare-infra-pipeline
+```
+
+If the resources do not exist yet, skip the imports and let Terraform create them:
+
+```bash
+terraform plan
+terraform apply
+```
