@@ -39,6 +39,50 @@ If the plan only adds lifecycle policies or harmless repository settings, apply 
 terraform apply
 ```
 
+## Remote State Bootstrap
+
+Create the S3 backend bucket and DynamoDB lock table once per AWS account/region:
+
+```bash
+aws s3api create-bucket \
+  --bucket pulsecare-terraform-state-967002976835-us-east-1 \
+  --region us-east-1
+
+aws s3api put-bucket-versioning \
+  --bucket pulsecare-terraform-state-967002976835-us-east-1 \
+  --versioning-configuration Status=Enabled
+
+aws s3api put-bucket-encryption \
+  --bucket pulsecare-terraform-state-967002976835-us-east-1 \
+  --server-side-encryption-configuration '{
+    "Rules": [
+      {
+        "ApplyServerSideEncryptionByDefault": {
+          "SSEAlgorithm": "AES256"
+        }
+      }
+    ]
+  }'
+
+aws s3api put-public-access-block \
+  --bucket pulsecare-terraform-state-967002976835-us-east-1 \
+  --public-access-block-configuration BlockPublicAcls=true,IgnorePublicAcls=true,BlockPublicPolicy=true,RestrictPublicBuckets=true
+
+aws dynamodb create-table \
+  --table-name pulsecare-terraform-locks \
+  --attribute-definitions AttributeName=LockID,AttributeType=S \
+  --key-schema AttributeName=LockID,KeyType=HASH \
+  --billing-mode PAY_PER_REQUEST \
+  --region us-east-1
+```
+
+After `backend.tf` is present and the bootstrap resources exist, migrate local state:
+
+```bash
+terraform init -migrate-state
+terraform plan
+```
+
 ## Notes
 
 - This first IaC step deliberately does not manage EKS, IAM, or CodePipeline yet.
