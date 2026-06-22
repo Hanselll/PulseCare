@@ -99,6 +99,66 @@ variable "eks_cluster_name" {
   default     = "pulsecare-dev"
 }
 
+variable "enable_eks" {
+  description = "Whether Terraform should create the EKS runtime layer."
+  type        = bool
+  default     = false
+}
+
+variable "vpc_cidr_block" {
+  description = "CIDR block for the PulseCare development VPC."
+  type        = string
+  default     = "10.42.0.0/16"
+}
+
+variable "eks_version" {
+  description = "EKS Kubernetes version."
+  type        = string
+  default     = "1.36"
+}
+
+variable "eks_cluster_role_name" {
+  description = "IAM role name for the EKS cluster."
+  type        = string
+  default     = "pulsecare-dev-eks-cluster-role"
+}
+
+variable "eks_node_role_name" {
+  description = "IAM role name for the EKS managed node group."
+  type        = string
+  default     = "pulsecare-dev-eks-node-role"
+}
+
+variable "eks_node_group_name" {
+  description = "EKS managed node group name."
+  type        = string
+  default     = "pulsecare-dev-ng"
+}
+
+variable "eks_node_instance_type" {
+  description = "EC2 instance type for EKS worker nodes."
+  type        = string
+  default     = "t3.medium"
+}
+
+variable "eks_node_min_size" {
+  description = "Minimum EKS worker node count."
+  type        = number
+  default     = 1
+}
+
+variable "eks_node_desired_size" {
+  description = "Desired EKS worker node count."
+  type        = number
+  default     = 1
+}
+
+variable "eks_node_max_size" {
+  description = "Maximum EKS worker node count."
+  type        = number
+  default     = 2
+}
+
 variable "app_pipeline_artifact_bucket_name" {
   description = "S3 bucket name used for the application CodePipeline artifacts."
   type        = string

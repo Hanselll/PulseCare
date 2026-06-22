@@ -49,3 +49,18 @@ output "app_pipeline_artifact_bucket" {
   description = "S3 artifact bucket for the application pipeline."
   value       = aws_s3_bucket.app_pipeline_artifacts.bucket
 }
+
+output "eks_cluster_name" {
+  description = "Terraform-managed EKS cluster name when enable_eks is true."
+  value       = var.enable_eks ? aws_eks_cluster.pulsecare[0].name : null
+}
+
+output "eks_node_group_name" {
+  description = "Terraform-managed EKS node group name when enable_eks is true."
+  value       = var.enable_eks ? aws_eks_node_group.pulsecare[0].node_group_name : null
+}
+
+output "eks_vpc_id" {
+  description = "Terraform-managed EKS VPC ID when enable_eks is true."
+  value       = var.enable_eks ? aws_vpc.pulsecare[0].id : null
+}

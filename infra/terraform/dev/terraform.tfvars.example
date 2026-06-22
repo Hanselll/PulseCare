@@ -5,3 +5,5 @@ github_connection_arn      = "arn:aws:codeconnections:us-east-1:967002976835:con
 github_repository          = "Hanselll/PulseCare"
 github_branch              = "main"
 eks_cluster_name           = "pulsecare-dev"
+enable_eks                 = false
+eks_version                = "1.36"

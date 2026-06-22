@@ -58,9 +58,13 @@ resource "aws_iam_role_policy" "terraform_codebuild" {
           "iam:GetRole",
           "iam:UpdateAssumeRolePolicy",
           "iam:ListRolePolicies",
+          "iam:ListAttachedRolePolicies",
           "iam:PutRolePolicy",
           "iam:GetRolePolicy",
           "iam:DeleteRolePolicy",
+          "iam:AttachRolePolicy",
+          "iam:DetachRolePolicy",
+          "iam:CreateServiceLinkedRole",
           "iam:PassRole"
         ]
         Resource = "*"
@@ -108,7 +112,59 @@ resource "aws_iam_role_policy" "terraform_codebuild" {
           "eks:DescribeAccessEntry",
           "eks:AssociateAccessPolicy",
           "eks:DisassociateAccessPolicy",
-          "eks:ListAssociatedAccessPolicies"
+          "eks:ListAssociatedAccessPolicies",
+          "eks:CreateCluster",
+          "eks:DeleteCluster",
+          "eks:DescribeCluster",
+          "eks:ListClusters",
+          "eks:UpdateClusterConfig",
+          "eks:UpdateClusterVersion",
+          "eks:CreateNodegroup",
+          "eks:DeleteNodegroup",
+          "eks:DescribeNodegroup",
+          "eks:ListNodegroups",
+          "eks:UpdateNodegroupConfig",
+          "eks:UpdateNodegroupVersion",
+          "eks:TagResource",
+          "eks:UntagResource",
+          "eks:ListTagsForResource"
+        ]
+        Resource = "*"
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "ec2:CreateVpc",
+          "ec2:DeleteVpc",
+          "ec2:DescribeVpcs",
+          "ec2:DescribeVpcAttribute",
+          "ec2:DescribeDhcpOptions",
+          "ec2:ModifyVpcAttribute",
+          "ec2:CreateSubnet",
+          "ec2:DeleteSubnet",
+          "ec2:DescribeSubnets",
+          "ec2:ModifySubnetAttribute",
+          "ec2:CreateInternetGateway",
+          "ec2:DeleteInternetGateway",
+          "ec2:AttachInternetGateway",
+          "ec2:DetachInternetGateway",
+          "ec2:DescribeInternetGateways",
+          "ec2:CreateRouteTable",
+          "ec2:DeleteRouteTable",
+          "ec2:DescribeRouteTables",
+          "ec2:CreateRoute",
+          "ec2:DeleteRoute",
+          "ec2:AssociateRouteTable",
+          "ec2:DisassociateRouteTable",
+          "ec2:CreateTags",
+          "ec2:DeleteTags",
+          "ec2:DescribeAvailabilityZones",
+          "ec2:DescribeSecurityGroups",
+          "ec2:DescribeNetworkInterfaces",
+          "ec2:DescribeInstances",
+          "ec2:DescribeLaunchTemplates",
+          "ec2:DescribeLaunchTemplateVersions",
+          "ec2:DescribeTags"
         ]
         Resource = "*"
       }

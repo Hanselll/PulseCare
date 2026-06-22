@@ -10,6 +10,13 @@ It manages the existing ECR repositories and lifecycle policies.
 - `pulsecare-alert-service`
 - `pulsecare-device-simulator`
 
+This stack keeps the low-cost DevOps control plane available by default:
+
+- Terraform S3 backend and DynamoDB lock table are bootstrapped outside this stack and should stay in place.
+- ECR repositories are kept so image history and repository URLs remain stable.
+- App and infra CodePipeline/CodeBuild resources are kept so the environment can be recreated quickly.
+- The EKS runtime layer is optional and controlled by `enable_eks`.
+
 ## First-Time Setup
 
 Run from this directory in AWS CloudShell or another shell with AWS credentials:
@@ -85,9 +92,76 @@ terraform plan
 
 ## Notes
 
-- This first IaC step deliberately does not manage EKS, IAM, or CodePipeline yet.
 - ECR repositories are configured with mutable tags because the current learning pipeline still pushes `latest`.
 - Lifecycle policies expire untagged images and keep the most recent images to control storage cost.
+
+## Runtime Cost Toggle
+
+The expensive development runtime is the EKS layer:
+
+- VPC
+- public subnets
+- internet gateway
+- route table
+- EKS cluster
+- managed node group
+- EKS cluster and node IAM roles
+- EKS access entry for the app deploy CodeBuild role
+
+It is disabled by default:
+
+```hcl
+enable_eks = false
+```
+
+With `enable_eks = false`, Terraform keeps the backend, ECR, CodeBuild, and CodePipeline resources, but does not create the EKS runtime.
+
+To create or recreate the runtime from CloudShell:
+
+```bash
+cd ~/PulseCare/infra/terraform/dev
+terraform init
+terraform plan -var="enable_eks=true"
+terraform apply -var="enable_eks=true"
+```
+
+After the cluster is ready, deploy the app and monitoring stack by running the app pipeline:
+
+```bash
+aws codepipeline start-pipeline-execution \
+  --name pulsecare-ci-pipeline \
+  --region us-east-1
+```
+
+To access the recreated cluster:
+
+```bash
+aws eks update-kubeconfig \
+  --region us-east-1 \
+  --name pulsecare-dev
+```
+
+To stop the runtime cost while keeping the pipelines and image repositories:
+
+```bash
+cd ~/PulseCare/infra/terraform/dev
+
+kubectl delete namespace monitoring --ignore-not-found
+kubectl delete namespace pulsecare-dev --ignore-not-found
+
+terraform plan -var="enable_eks=false"
+terraform apply -var="enable_eks=false"
+```
+
+The namespace deletion is important because the application and monitoring resources are installed by Helm through the app deploy pipeline, not by this Terraform stack. Removing them first gives Kubernetes a chance to clean up service load balancers and related runtime resources before EKS is deleted.
+
+If an existing `eksctl` cluster named `pulsecare-dev` still exists, choose one path before using this Terraform-managed EKS layer:
+
+```bash
+eksctl delete cluster --name pulsecare-dev --region us-east-1
+```
+
+or import the existing cluster and its related resources into Terraform. For this learning environment, deleting the old `eksctl` cluster and recreating it through Terraform is simpler and more repeatable.
 
 ## Infra Pipeline
 
