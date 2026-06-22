@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: pulsecare-db-secret
+type: Opaque
+stringData:
+  POSTGRES_DB: {{ .Values.postgres.database | quote }}
+  POSTGRES_USER: {{ .Values.postgres.username | quote }}
+  POSTGRES_PASSWORD: {{ .Values.postgres.password | quote }}
+  DATABASE_URL: {{ printf "postgresql://%s:%s@postgres:5432/%s" .Values.postgres.username .Values.postgres.password .Values.postgres.database | quote }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pulsecare-app-config
+data:
+  REDIS_URL: redis://redis:6379/0
+  SCORING_URL: http://risk-scoring-service:8000/api/v1/score
+  ALERT_URL: http://alert-service:8000/api/v1/alerts/evaluate
+  TARGET_INGESTION_URL: http://ingestion-service:8000/api/v1/signals
+  DEVICE_COUNT: {{ .Values.config.deviceCount | quote }}
+  SEND_INTERVAL_MS: {{ .Values.config.sendIntervalMs | quote }}
+  ERROR_MODE: {{ .Values.config.errorMode | quote }}
+  REGION_COUNT: {{ .Values.config.regionCount | quote }}
+  SCENARIO_NAME: {{ .Values.config.scenarioName | quote }}
+  MEMORY_LEAK_MODE: {{ .Values.config.memoryLeakMode | quote }}
+  SCORING_DELAY_MS: {{ .Values.config.scoringDelayMs | quote }}
+  REDIS_LATENCY_MS: {{ .Values.config.redisLatencyMs | quote }}

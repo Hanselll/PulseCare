@@ -1,0 +1,49 @@
+global:
+  imageRegistry: 967002976835.dkr.ecr.us-east-1.amazonaws.com
+  imageTag: latest
+  imagePullPolicy: Always
+  initContainerImage: public.ecr.aws/docker/library/busybox:1.36
+
+postgres:
+  image: public.ecr.aws/docker/library/postgres:16-alpine
+  database: pulsecare
+  username: pulsecare
+  password: pulsecare
+  storage:
+    type: emptyDir
+
+redis:
+  image: public.ecr.aws/docker/library/redis:7-alpine
+
+config:
+  deviceCount: "25"
+  sendIntervalMs: "1000"
+  errorMode: normal
+  regionCount: "3"
+  scenarioName: baseline
+  memoryLeakMode: "false"
+  scoringDelayMs: "0"
+  redisLatencyMs: "0"
+
+services:
+  alert:
+    name: alert-service
+    repository: pulsecare-alert-service
+    replicas: 1
+  riskScoring:
+    name: risk-scoring-service
+    repository: pulsecare-risk-scoring-service
+    replicas: 1
+  ingestion:
+    name: ingestion-service
+    repository: pulsecare-ingestion-service
+    replicas: 1
+  deviceSimulator:
+    name: device-simulator
+    repository: pulsecare-device-simulator
+    replicas: 1
+
+serviceMonitor:
+  enabled: true
+  releaseLabel: pulsecare-monitoring
+  interval: 15s

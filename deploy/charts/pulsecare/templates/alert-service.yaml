@@ -1,23 +1,28 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: alert-service
-  labels:
-    app: alert-service
+  name: {{ .Values.services.alert.name }}
 spec:
-  replicas: 1
+  replicas: {{ .Values.services.alert.replicas }}
   selector:
     matchLabels:
-      app: alert-service
+      app: {{ .Values.services.alert.name }}
   template:
     metadata:
       labels:
-        app: alert-service
+        app: {{ .Values.services.alert.name }}
     spec:
+      initContainers:
+        - name: wait-for-postgres
+          image: {{ .Values.global.initContainerImage }}
+          command: ["sh", "-c", "until nc -z postgres 5432; do echo waiting for postgres; sleep 2; done"]
+        - name: wait-for-redis
+          image: {{ .Values.global.initContainerImage }}
+          command: ["sh", "-c", "until nc -z redis 6379; do echo waiting for redis; sleep 2; done"]
       containers:
-        - name: alert-service
-          image: 967002976835.dkr.ecr.us-east-1.amazonaws.com/pulsecare-alert-service:latest
-          imagePullPolicy: Always
+        - name: {{ .Values.services.alert.name }}
+          image: {{ include "pulsecare.image" (dict "root" . "repository" .Values.services.alert.repository) }}
+          imagePullPolicy: {{ .Values.global.imagePullPolicy }}
           ports:
             - containerPort: 8000
           env:
@@ -52,10 +57,12 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: alert-service
+  name: {{ .Values.services.alert.name }}
+  labels:
+    app: {{ .Values.services.alert.name }}
 spec:
   selector:
-    app: alert-service
+    app: {{ .Values.services.alert.name }}
   ports:
     - name: http
       port: 8000

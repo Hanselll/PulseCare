@@ -1,23 +1,21 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: device-simulator
-  labels:
-    app: device-simulator
+  name: {{ .Values.services.deviceSimulator.name }}
 spec:
-  replicas: 1
+  replicas: {{ .Values.services.deviceSimulator.replicas }}
   selector:
     matchLabels:
-      app: device-simulator
+      app: {{ .Values.services.deviceSimulator.name }}
   template:
     metadata:
       labels:
-        app: device-simulator
+        app: {{ .Values.services.deviceSimulator.name }}
     spec:
       containers:
-        - name: device-simulator
-          image: 967002976835.dkr.ecr.us-east-1.amazonaws.com/pulsecare-device-simulator:latest
-          imagePullPolicy: Always
+        - name: {{ .Values.services.deviceSimulator.name }}
+          image: {{ include "pulsecare.image" (dict "root" . "repository" .Values.services.deviceSimulator.repository) }}
+          imagePullPolicy: {{ .Values.global.imagePullPolicy }}
           ports:
             - containerPort: 8000
           env:
@@ -67,10 +65,12 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: device-simulator
+  name: {{ .Values.services.deviceSimulator.name }}
+  labels:
+    app: {{ .Values.services.deviceSimulator.name }}
 spec:
   selector:
-    app: device-simulator
+    app: {{ .Values.services.deviceSimulator.name }}
   ports:
     - name: http
       port: 8000

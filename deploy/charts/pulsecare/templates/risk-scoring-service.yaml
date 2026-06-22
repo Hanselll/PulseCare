@@ -1,23 +1,28 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: risk-scoring-service
-  labels:
-    app: risk-scoring-service
+  name: {{ .Values.services.riskScoring.name }}
 spec:
-  replicas: 1
+  replicas: {{ .Values.services.riskScoring.replicas }}
   selector:
     matchLabels:
-      app: risk-scoring-service
+      app: {{ .Values.services.riskScoring.name }}
   template:
     metadata:
       labels:
-        app: risk-scoring-service
+        app: {{ .Values.services.riskScoring.name }}
     spec:
+      initContainers:
+        - name: wait-for-postgres
+          image: {{ .Values.global.initContainerImage }}
+          command: ["sh", "-c", "until nc -z postgres 5432; do echo waiting for postgres; sleep 2; done"]
+        - name: wait-for-redis
+          image: {{ .Values.global.initContainerImage }}
+          command: ["sh", "-c", "until nc -z redis 6379; do echo waiting for redis; sleep 2; done"]
       containers:
-        - name: risk-scoring-service
-          image: 967002976835.dkr.ecr.us-east-1.amazonaws.com/pulsecare-risk-scoring-service:latest
-          imagePullPolicy: Always
+        - name: {{ .Values.services.riskScoring.name }}
+          image: {{ include "pulsecare.image" (dict "root" . "repository" .Values.services.riskScoring.repository) }}
+          imagePullPolicy: {{ .Values.global.imagePullPolicy }}
           ports:
             - containerPort: 8000
           env:
@@ -67,10 +72,12 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: risk-scoring-service
+  name: {{ .Values.services.riskScoring.name }}
+  labels:
+    app: {{ .Values.services.riskScoring.name }}
 spec:
   selector:
-    app: risk-scoring-service
+    app: {{ .Values.services.riskScoring.name }}
   ports:
     - name: http
       port: 8000

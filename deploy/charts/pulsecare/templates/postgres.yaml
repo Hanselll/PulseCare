@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: postgres
-          image: public.ecr.aws/docker/library/postgres:16-alpine
+          image: {{ .Values.postgres.image }}
           ports:
             - containerPort: 5432
           envFrom:
@@ -28,9 +28,9 @@ spec:
               command:
                 - pg_isready
                 - -U
-                - pulsecare
+                - {{ .Values.postgres.username }}
                 - -d
-                - pulsecare
+                - {{ .Values.postgres.database }}
             initialDelaySeconds: 10
             periodSeconds: 5
           volumeMounts:

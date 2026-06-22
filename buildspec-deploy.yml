@@ -5,6 +5,7 @@ env:
     AWS_DEFAULT_REGION: "us-east-1"
     EKS_CLUSTER_NAME: "pulsecare-dev"
     MONITORING_RELEASE: "pulsecare-monitoring"
+    APP_RELEASE: "pulsecare"
 
 phases:
   install:
@@ -37,30 +38,30 @@ phases:
           --wait \
           --timeout 10m
 
-        kubectl apply -f deploy/k8s/default/config.yaml
-        kubectl apply -f deploy/k8s/default/postgres.yaml
-        kubectl apply -f deploy/k8s/default/redis.yaml
+        if ! helm status "$APP_RELEASE" --namespace default >/dev/null 2>&1; then
+          kubectl delete deployment postgres redis alert-service risk-scoring-service ingestion-service device-simulator --ignore-not-found
+          kubectl delete service postgres redis alert-service risk-scoring-service ingestion-service device-simulator --ignore-not-found
+          kubectl delete secret pulsecare-db-secret --ignore-not-found
+          kubectl delete configmap pulsecare-app-config --ignore-not-found
+          kubectl delete servicemonitor pulsecare-services --ignore-not-found
+        fi
+
+        helm upgrade --install "$APP_RELEASE" deploy/charts/pulsecare \
+          --namespace default \
+          --set global.imageTag=${CODEBUILD_RESOLVED_SOURCE_VERSION:0:7} \
+          --wait \
+          --timeout 10m
+
         kubectl rollout status deployment/postgres --timeout=240s
         kubectl rollout status deployment/redis --timeout=180s
-
-        kubectl apply -f deploy/k8s/default/alert-service.yaml
-        kubectl apply -f deploy/k8s/default/risk-scoring-service.yaml
-        kubectl apply -f deploy/k8s/default/ingestion-service.yaml
-        kubectl apply -f deploy/k8s/default/device-simulator.yaml
-
-        kubectl rollout restart deployment/alert-service
-        kubectl rollout restart deployment/risk-scoring-service
-        kubectl rollout restart deployment/ingestion-service
-        kubectl rollout restart deployment/device-simulator
-
         kubectl rollout status deployment/alert-service --timeout=240s
         kubectl rollout status deployment/risk-scoring-service --timeout=240s
         kubectl rollout status deployment/ingestion-service --timeout=240s
         kubectl rollout status deployment/device-simulator --timeout=240s
-        kubectl apply -f deploy/k8s/monitoring/service-monitors.yaml
 
   post_build:
     commands:
       - kubectl get pods
       - kubectl get svc
       - kubectl get servicemonitor
+      - helm list

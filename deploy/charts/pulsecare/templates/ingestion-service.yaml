@@ -1,23 +1,25 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: ingestion-service
-  labels:
-    app: ingestion-service
+  name: {{ .Values.services.ingestion.name }}
 spec:
-  replicas: 1
+  replicas: {{ .Values.services.ingestion.replicas }}
   selector:
     matchLabels:
-      app: ingestion-service
+      app: {{ .Values.services.ingestion.name }}
   template:
     metadata:
       labels:
-        app: ingestion-service
+        app: {{ .Values.services.ingestion.name }}
     spec:
+      initContainers:
+        - name: wait-for-postgres
+          image: {{ .Values.global.initContainerImage }}
+          command: ["sh", "-c", "until nc -z postgres 5432; do echo waiting for postgres; sleep 2; done"]
       containers:
-        - name: ingestion-service
-          image: 967002976835.dkr.ecr.us-east-1.amazonaws.com/pulsecare-ingestion-service:latest
-          imagePullPolicy: Always
+        - name: {{ .Values.services.ingestion.name }}
+          image: {{ include "pulsecare.image" (dict "root" . "repository" .Values.services.ingestion.repository) }}
+          imagePullPolicy: {{ .Values.global.imagePullPolicy }}
           ports:
             - containerPort: 8000
           env:
@@ -47,10 +49,12 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: ingestion-service
+  name: {{ .Values.services.ingestion.name }}
+  labels:
+    app: {{ .Values.services.ingestion.name }}
 spec:
   selector:
-    app: ingestion-service
+    app: {{ .Values.services.ingestion.name }}
   ports:
     - name: http
       port: 8000
