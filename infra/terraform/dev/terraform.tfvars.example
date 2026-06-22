@@ -1,0 +1,3 @@
+aws_region                 = "us-east-1"
+max_images                 = 10
+untagged_image_expire_days = 7
