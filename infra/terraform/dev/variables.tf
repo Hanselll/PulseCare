@@ -92,3 +92,51 @@ variable "infra_pipeline_name" {
   type        = string
   default     = "pulsecare-infra-pipeline"
 }
+
+variable "eks_cluster_name" {
+  description = "Existing EKS cluster name used by the app deployment pipeline."
+  type        = string
+  default     = "pulsecare-dev"
+}
+
+variable "app_pipeline_artifact_bucket_name" {
+  description = "S3 bucket name used for the application CodePipeline artifacts."
+  type        = string
+  default     = "pulsecare-app-pipeline-artifacts-967002976835-us-east-1"
+}
+
+variable "app_image_codebuild_role_name" {
+  description = "IAM role name for the app image build CodeBuild project."
+  type        = string
+  default     = "codebuild-pulsecare-image-build-service-role"
+}
+
+variable "app_deploy_codebuild_role_name" {
+  description = "IAM role name for the EKS deploy CodeBuild project."
+  type        = string
+  default     = "codebuild-pulsecare-eks-deploy-service-role"
+}
+
+variable "app_codepipeline_role_name" {
+  description = "IAM role name for the application CodePipeline."
+  type        = string
+  default     = "codepipeline-pulsecare-app-service-role"
+}
+
+variable "app_image_build_project_name" {
+  description = "CodeBuild project name for app image builds."
+  type        = string
+  default     = "pulsecare-image-build"
+}
+
+variable "app_eks_deploy_project_name" {
+  description = "CodeBuild project name for app EKS deployment."
+  type        = string
+  default     = "pulsecare-eks-deploy"
+}
+
+variable "app_pipeline_name" {
+  description = "Application CodePipeline name."
+  type        = string
+  default     = "pulsecare-ci-pipeline"
+}

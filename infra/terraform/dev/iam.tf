@@ -49,6 +49,68 @@ resource "aws_iam_role_policy" "terraform_codebuild" {
         Effect   = "Allow"
         Action   = ["ecr:*"]
         Resource = "*"
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "iam:CreateRole",
+          "iam:DeleteRole",
+          "iam:GetRole",
+          "iam:UpdateAssumeRolePolicy",
+          "iam:ListRolePolicies",
+          "iam:PutRolePolicy",
+          "iam:GetRolePolicy",
+          "iam:DeleteRolePolicy",
+          "iam:PassRole"
+        ]
+        Resource = "*"
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "codebuild:CreateProject",
+          "codebuild:UpdateProject",
+          "codebuild:DeleteProject",
+          "codebuild:BatchGetProjects"
+        ]
+        Resource = "*"
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "codepipeline:CreatePipeline",
+          "codepipeline:UpdatePipeline",
+          "codepipeline:DeletePipeline",
+          "codepipeline:GetPipeline",
+          "codepipeline:GetPipelineState"
+        ]
+        Resource = "*"
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "s3:CreateBucket",
+          "s3:DeleteBucket",
+          "s3:GetBucketPublicAccessBlock",
+          "s3:PutBucketPublicAccessBlock",
+          "s3:GetEncryptionConfiguration",
+          "s3:PutEncryptionConfiguration",
+          "s3:GetBucketVersioning",
+          "s3:PutBucketVersioning"
+        ]
+        Resource = "*"
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "eks:CreateAccessEntry",
+          "eks:DeleteAccessEntry",
+          "eks:DescribeAccessEntry",
+          "eks:AssociateAccessPolicy",
+          "eks:DisassociateAccessPolicy",
+          "eks:ListAssociatedAccessPolicies"
+        ]
+        Resource = "*"
       }
     ]
   })

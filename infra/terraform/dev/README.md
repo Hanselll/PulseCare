@@ -143,3 +143,70 @@ If the resources do not exist yet, skip the imports and let Terraform create the
 terraform plan
 terraform apply
 ```
+
+## App Pipeline Management
+
+This Terraform configuration also manages the learning application pipeline:
+
+- App pipeline artifact bucket
+- Image build CodeBuild role and project
+- EKS deploy CodeBuild role and project
+- App CodePipeline role and pipeline
+- EKS access entry for the deploy CodeBuild role
+
+Expected app pipeline flow:
+
+```text
+Source
+  -> BuildImages
+  -> DeployToEKS
+```
+
+If the app resources already exist, import them before `terraform apply`.
+
+Typical import commands:
+
+```bash
+terraform import aws_iam_role.app_image_codebuild codebuild-pulsecare-image-build-service-role
+terraform import aws_iam_role_policy.app_image_codebuild codebuild-pulsecare-image-build-service-role:PulseCareImageCodeBuildAccess
+
+terraform import aws_iam_role.app_deploy_codebuild codebuild-pulsecare-eks-deploy-service-role
+terraform import aws_iam_role_policy.app_deploy_codebuild codebuild-pulsecare-eks-deploy-service-role:PulseCareEksDeployCodeBuildAccess
+
+terraform import aws_codebuild_project.app_image_build pulsecare-image-build
+terraform import aws_codebuild_project.app_eks_deploy pulsecare-eks-deploy
+
+terraform import aws_iam_role.app_codepipeline codepipeline-pulsecare-app-service-role
+terraform import aws_iam_role_policy.app_codepipeline codepipeline-pulsecare-app-service-role:PulseCareAppCodePipelineAccess
+
+terraform import aws_codepipeline.app pulsecare-ci-pipeline
+```
+
+The app artifact bucket in Terraform is a clean target bucket:
+
+```text
+pulsecare-app-pipeline-artifacts-967002976835-us-east-1
+```
+
+If you already created it manually, import it:
+
+```bash
+terraform import aws_s3_bucket.app_pipeline_artifacts pulsecare-app-pipeline-artifacts-967002976835-us-east-1
+terraform import aws_s3_bucket_public_access_block.app_pipeline_artifacts pulsecare-app-pipeline-artifacts-967002976835-us-east-1
+terraform import aws_s3_bucket_server_side_encryption_configuration.app_pipeline_artifacts pulsecare-app-pipeline-artifacts-967002976835-us-east-1
+terraform import aws_s3_bucket_versioning.app_pipeline_artifacts pulsecare-app-pipeline-artifacts-967002976835-us-east-1
+```
+
+If the bucket does not exist, Terraform can create it.
+
+For EKS access, the deploy CodeBuild role is granted cluster-admin access through EKS access entries.
+If that access entry was created manually, import it before applying:
+
+```bash
+terraform import aws_eks_access_entry.app_deploy_codebuild pulsecare-dev:arn:aws:iam::967002976835:role/codebuild-pulsecare-eks-deploy-service-role
+terraform import aws_eks_access_policy_association.app_deploy_codebuild_admin pulsecare-dev#arn:aws:iam::967002976835:role/codebuild-pulsecare-eks-deploy-service-role#arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy
+```
+
+If imports fail because the resource does not exist, let Terraform create it.
+
+Important: this step does not manage the EKS cluster or node group itself yet. It only grants the deploy CodeBuild role access to the existing cluster.

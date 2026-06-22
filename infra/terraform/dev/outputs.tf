@@ -31,3 +31,21 @@ output "infra_pipeline_artifact_bucket" {
   description = "S3 artifact bucket for the infrastructure pipeline."
   value       = aws_s3_bucket.infra_pipeline_artifacts.bucket
 }
+
+output "app_pipeline_name" {
+  description = "Application CodePipeline name."
+  value       = aws_codepipeline.app.name
+}
+
+output "app_codebuild_project_names" {
+  description = "Application CodeBuild project names."
+  value = {
+    image_build = aws_codebuild_project.app_image_build.name
+    eks_deploy  = aws_codebuild_project.app_eks_deploy.name
+  }
+}
+
+output "app_pipeline_artifact_bucket" {
+  description = "S3 artifact bucket for the application pipeline."
+  value       = aws_s3_bucket.app_pipeline_artifacts.bucket
+}
